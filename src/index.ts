@@ -29,6 +29,8 @@ app.post("/usuarios", async (req, res) => {
   return res.status(201).json(usuarioCriado)
 })
 
+//Exames
+
 app.listen(port, () => {
   console.log("Servidor ta de pé :p")
 })
