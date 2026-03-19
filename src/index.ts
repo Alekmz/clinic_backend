@@ -1,6 +1,6 @@
 import express from 'express';
 import { prisma } from './prisma/prisma';
-import type { Usuario } from './prisma/generated/prisma/client';
+import type { Usuario, Exame } from './prisma/generated/prisma/client';
 
 const app = express();
 app.use(express.json())
@@ -12,21 +12,9 @@ app.get('/', (req, res) => {
 })
 
 // Endpoints usuario
-app.get('/usuarios', async (_, res) => {
-  const usuarios = await prisma.usuario.findMany();
-  return res.json(usuarios);
-})
 
-app.get('/usuarios/:id', async (req, res) => {
-  const idUsuario = Number(req.params.id)
-  const usuario = await prisma.usuario.findUnique({
-    where: {
-      id: idUsuario
-    }
-  })
 
-  return res.status(200).json(usuario);
-})
+// criar usuários 
 
 app.post("/usuarios", async (req, res) => {
   console.log(req.body)
@@ -39,6 +27,30 @@ app.post("/usuarios", async (req, res) => {
   })
   return res.status(201).json(usuarioCriado)
 })
+
+// listar usuários 
+
+app.get('/usuarios', async (_, res) => {
+  const usuarios = await prisma.usuario.findMany();
+  return res.json(usuarios);
+})
+
+// buscar usuário por id 
+
+app.get('/usuarios/:id', async (req, res) => {
+  const idUsuario = Number(req.params.id)
+  const usuario = await prisma.usuario.findUnique({
+    where: {
+      id: idUsuario
+    }
+  })
+
+  return res.status(200).json(usuario);
+})
+
+
+
+// atualizar usuários 
 
 app.put("/usuarios/:id", async (req, res) => {
   const idUsuario = Number(req.params.id)
@@ -56,6 +68,9 @@ app.put("/usuarios/:id", async (req, res) => {
   return res.status(200).json(usuarioAtualizado);
 })
 
+
+// deletar usuário 
+
 app.delete('/usuarios/:id', async (req, res) => {
   const idUsuario = Number(req.params.id)
   const usuarioDeletado = await prisma.usuario.delete({
@@ -70,7 +85,89 @@ app.delete('/usuarios/:id', async (req, res) => {
   });
 })
 
-//Exames
+//Exames - put, delet, get por id 
+
+  //Criando exame 
+
+  app.post("/exames", async (req, res) => {
+  console.log(req.body)
+  const dadosExame = req.body as Exame
+
+  const exameCriado = await prisma.exame.create({
+    data: {
+       tipo_exame: dadosExame.tipo_exame,
+        descricao: dadosExame.descricao,
+        resultado: dadosExame.resultado,
+        data_exame: new Date(dadosExame.data_exame),
+        valor: dadosExame.valor, 
+    }
+  })
+
+  // tipo_exame String
+  // valor      Decimal
+  // descricao  String
+  // resultado  String
+  // data_exame DateTime
+
+
+  return res.status(201).json(exameCriado)
+})
+
+  // Listar exames 
+
+app.get('/exames', async (_, res) => {
+  const exames = await prisma.exame.findMany();
+  return res.json(exames);
+})
+
+  // atualizar exame
+
+  app.put("/exames/:id", async (req, res) => {
+  const idExame = Number(req.params.id)
+  const dadosParaAtualizar = req.body as Omit<Exame, 'id'>
+
+  const ExameAtualizado = await prisma.exame.update({
+    data: {
+      ...dadosParaAtualizar, 
+      data_exame: new Date(dadosParaAtualizar.data_exame)
+    },
+    where: {
+      id: idExame
+    }
+  })
+
+  return res.status(200).json(ExameAtualizado);
+})
+
+  // buscar exame por id
+
+    app.get('/exames/:id', async (req, res) => {
+  const idExame = Number(req.params.id)
+  const exame = await prisma.exame.findUnique({
+    where: {
+      id: idExame
+    }
+  })
+
+  return res.status(200).json(exame);
+})
+
+// deletar exame 
+
+  app.delete('/exames/:id', async (req, res) => {
+  const idExame = Number(req.params.id)
+  const exameDeletado = await prisma.exame.delete({
+    where: {
+      id: idExame
+    }
+  })
+
+  return res.status(200).json({
+    mensagem: "Exame deletado com sucesso!",
+    data: exameDeletado
+  });
+})
+
 
 app.listen(port, () => {
   console.log("Servidor ta de pé :p")
